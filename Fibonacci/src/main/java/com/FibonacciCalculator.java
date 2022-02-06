@@ -23,22 +23,10 @@ public class FibonacciCalculator {
         return result;
     }
 
-    public void recursiveCalculateFibonacciNumbers(List<Integer> result, int limit) {
-        int previous = 0;
-        int current = 1;
-        result.add(previous);
-        result.add(current);
+    public int calculateFibonacciNumbers(int limit) {
+        if (limit == 0) return 0;
+        if (limit == 1) return 1;
 
-        calculateFibonacciNumbers(result, previous, current, limit - 2);
-    }
-
-    private void calculateFibonacciNumbers(List<Integer> result, int previous, int current, int limit) {
-        if (limit == 0) {
-            return;
-        }
-        int sum = previous + current;
-        result.add(sum);
-
-        calculateFibonacciNumbers(result, current, sum, limit - 1);
+        return calculateFibonacciNumbers(limit - 2) + calculateFibonacciNumbers(limit - 1);
     }
 }
