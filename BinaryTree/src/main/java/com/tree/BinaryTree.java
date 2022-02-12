@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
-    private final Node<E> root;
+    private Node<E> root;
 
     public BinaryTree(E element) {
         root = new Node<>(element, null, null);
+    }
+
+    public BinaryTree() {
+        root = new Node<>();
     }
 
     @Override
@@ -17,8 +21,11 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
 
     @Override
     public boolean remove(E element) {
-        List<Node<E>> nodes = findNodeToRemove(root, null, element);
+        if (root.element == null) {
+            return false;
+        }
 
+        List<Node<E>> nodes = findNodeToRemove(root, null, element);
         if (nodes.isEmpty()) {
             return false;
         }
@@ -32,7 +39,7 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
             return addCurrentAndParentNodes(currentAndParentNodes, currentNode, parentNode);
         }
 
-        if (element.compareTo(currentNode.element) < 0) {
+        if (currentNode.element.compareTo(element) > 0) {
             if (currentNode.left != null) {
                 return checkNode(currentNode.left, element, currentAndParentNodes, currentNode);
             }
@@ -45,13 +52,19 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
     }
 
     private <T extends Comparable<T>> void insertNode(Node<T> node, T element) {
+        if (node.element == null) {
+            node.element = element;
+        }
+
         if (element.compareTo(node.element) < 0) {
             if (node.left == null) {
                 node.left = new Node<>(element, null, null);
             } else {
                 insertNode(node.left, element);
             }
-        } else {
+        }
+
+        if (element.compareTo(node.element) > 0) {
             if (node.right == null) {
                 node.right = new Node<>(element, null, null);
             } else {
@@ -64,29 +77,81 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
         Node<E> currentNode = node.get(0);
         Node<E> parentNode = node.get(1);
 
-        if (parentNode == null) {
-            return false;
-        }
-
+        //0 ввипадок. Видаляємо останній елемент дерева
         if (currentNode.left == null && currentNode.right == null) {
-            addToParentNode(parentNode, currentNode, null);
+            if (parentNode == null) {
+                return false; // don't remove root node that it not has child
+            }
+
+            removeCurrentNode(parentNode, currentNode.element, null);
             return true;
         }
 
+        // 1 випадок. Видаляємо елемент, к якого немає праого children, а лівий є
         if (currentNode.left != null && currentNode.right == null) {
-            addToParentNode(parentNode, currentNode, currentNode.left);
+
+            if (removeIfNodeRoot(parentNode, currentNode.left)) return true;
+
+            removeCurrentNode(parentNode, currentNode.element, currentNode.left);
             return true;
         }
 
+        // 2 випадок. Видаляємо елемент, у child якого немає лівого, а правий є
         if (currentNode.right.left == null) {
-            currentNode.right.left = currentNode.left;
-            addToParentNode(parentNode, currentNode, currentNode.right);
-            return true;
-        } else {
-            currentNode.right.left = currentNode.left;
-            addToParentNode(parentNode, currentNode, currentNode.right.left);
+            Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
+            lastLeftNode.left = currentNode.left;
+
+            if (removeIfNodeRoot(parentNode, currentNode.right)) return true;
+
+            removeCurrentNode(parentNode, currentNode.element, currentNode.right);
             return true;
         }
+
+        // 3 випадок. Видаляємо елемент, к якого у правого немає правого children, а лівий є (current.right.right)
+        if (currentNode.right.right == null) {
+            Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
+            lastLeftNode.left = currentNode.left;
+
+            Node<E> lastRightNode = getLastRightNode(lastLeftNode);
+            lastRightNode.right = currentNode.right;
+            currentNode.right.left = null;
+
+            if (removeIfNodeRoot(parentNode, lastLeftNode)) return true;
+
+            removeCurrentNode(parentNode, currentNode.element, lastLeftNode);
+            return true;
+
+        } else {
+            Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
+            lastLeftNode.left = currentNode.left;
+
+            if (removeIfNodeRoot(parentNode, currentNode.right)) return true;
+
+            removeCurrentNode(parentNode, currentNode.element, currentNode.right.left);
+            return true;
+        }
+    }
+
+    private Node<E> getLastLeftNode(Node<E> current) {
+        if (current.left == null) {
+            return current;
+        }
+        return getLastLeftNode(current.left);
+    }
+
+    private Node<E> getLastRightNode(Node<E> current) {
+        if (current.right == null) {
+            return current;
+        }
+        return getLastLeftNode(current.right);
+    }
+
+    private boolean removeIfNodeRoot(Node<E> parentNode, Node<E> currentNode) {
+        if (parentNode == null) {
+            root = currentNode;
+            return true;
+        }
+        return false;
     }
 
     private <T extends Comparable<T>> List<Node<T>> checkNode(Node<T> node, T element, List<Node<T>> currentAndParentNodes, Node<T> currentNode) {
@@ -103,8 +168,8 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
         return currentAndParentNodes;
     }
 
-    private void addToParentNode(Node<E> parentNode, Node<E> currentNode, Node<E> node) {
-        if (parentNode.left.element.equals(currentNode.element)) {
+    private void removeCurrentNode(Node<E> parentNode, E element, Node<E> node) {
+        if (parentNode.left.element.equals(element)) {
             parentNode.left = node;
         } else {
             parentNode.right = node;

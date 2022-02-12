@@ -10,4 +10,10 @@ public class Node<T> {
         this.left = left;
         this.right = right;
     }
+
+    public Node() {
+        this.element = null;
+        this.left = null;
+        this.right = null;
+    }
 }
