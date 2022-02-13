@@ -1,10 +1,11 @@
 package com;
 
 import com.tree.BinaryTree;
+import com.tree.Tree;
 
 public class Application {
     public static void main(String[] args) {
-        BinaryTree<Integer> tree = new BinaryTree<>();
+        Tree<Integer> tree = new BinaryTree<>();
         tree.add(20);
         tree.add(10);
         tree.add(27);
