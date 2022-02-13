@@ -1,15 +1,12 @@
 package com;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class FibonacciCalculator {
-    public List<Integer> cycleCalculateFibonacciNumbers(int limit) {
-        final List<Integer> result = new ArrayList<>();
+    public void cycleCalculateFibonacciNumbers(int limit) {
+        Printer printer = new Printer();
 
         int previous = 0;
         int current = 1;
-        result.add(current);
+        printer.print(current);
 
         int sum;
         for (int i = 0; i < limit - 1; i++) {
@@ -17,9 +14,9 @@ public class FibonacciCalculator {
             previous = current;
             current = sum;
 
-            result.add(sum);
+            printer.print(sum);
+
         }
-        return result;
     }
 
     public int recursiveCalculateFibonacciNumbers(int limit) {
