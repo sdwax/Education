@@ -77,37 +77,21 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
         Node<E> currentNode = node.get(0);
         Node<E> parentNode = node.get(1);
 
-        //0 ввипадок. Видаляємо останній елемент дерева
         if (currentNode.left == null && currentNode.right == null) {
-            if (parentNode == null) {
-                return false; // don't remove root node that it not has child
-            }
-
-            removeCurrentNode(parentNode, currentNode.element, null);
-            return true;
+            return removeCurrentNode(parentNode, currentNode.element, null);
         }
 
-        // 1 випадок. Видаляємо елемент, к якого немає праого children, а лівий є
         if (currentNode.left != null && currentNode.right == null) {
-
-            if (removeIfNodeRoot(parentNode, currentNode.left)) return true;
-
-            removeCurrentNode(parentNode, currentNode.element, currentNode.left);
-            return true;
+            return removeCurrentNode(parentNode, currentNode.element, currentNode.left);
         }
 
-        // 2 випадок. Видаляємо елемент, у child якого немає лівого, а правий є
         if (currentNode.right.left == null) {
             Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
             lastLeftNode.left = currentNode.left;
 
-            if (removeIfNodeRoot(parentNode, currentNode.right)) return true;
-
-            removeCurrentNode(parentNode, currentNode.element, currentNode.right);
-            return true;
+            return removeCurrentNode(parentNode, currentNode.element, currentNode.right);
         }
 
-        // 3 випадок. Видаляємо елемент, к якого у правого немає правого children, а лівий є (current.right.right)
         if (currentNode.right.right == null) {
             Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
             lastLeftNode.left = currentNode.left;
@@ -116,20 +100,14 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
             lastRightNode.right = currentNode.right;
             currentNode.right.left = null;
 
-            if (removeIfNodeRoot(parentNode, lastLeftNode)) return true;
-
-            removeCurrentNode(parentNode, currentNode.element, lastLeftNode);
-            return true;
-
-        } else {
-            Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
-            lastLeftNode.left = currentNode.left;
-
-            if (removeIfNodeRoot(parentNode, currentNode.right)) return true;
-
-            removeCurrentNode(parentNode, currentNode.element, currentNode.right.left);
-            return true;
+            return removeCurrentNode(parentNode, currentNode.element, lastLeftNode);
         }
+
+        Node<E> lastLeftNode = getLastLeftNode(currentNode.right);
+        lastLeftNode.left = currentNode.left;
+
+        return removeCurrentNode(parentNode, currentNode.element, currentNode.right);
+
     }
 
     private Node<E> getLastLeftNode(Node<E> current) {
@@ -146,14 +124,6 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
         return getLastLeftNode(current.right);
     }
 
-    private boolean removeIfNodeRoot(Node<E> parentNode, Node<E> currentNode) {
-        if (parentNode == null) {
-            root = currentNode;
-            return true;
-        }
-        return false;
-    }
-
     private <T extends Comparable<T>> List<Node<T>> checkNode(Node<T> node, T element, List<Node<T>> currentAndParentNodes, Node<T> currentNode) {
         if (node.element.compareTo(element) == 0) {
             return addCurrentAndParentNodes(currentAndParentNodes, node, currentNode);
@@ -168,11 +138,21 @@ public class BinaryTree<E extends Comparable<E>> implements Tree<E> {
         return currentAndParentNodes;
     }
 
-    private void removeCurrentNode(Node<E> parentNode, E element, Node<E> node) {
+    private boolean removeCurrentNode(Node<E> parentNode, E element, Node<E> node) {
+        if (parentNode == null && node == null) {
+            return false; // don't remove root node that it not has child
+        }
+
+        if (parentNode == null) {
+            root = node;
+            return true;
+        }
+
         if (parentNode.left.element.equals(element)) {
             parentNode.left = node;
         } else {
             parentNode.right = node;
         }
+        return true;
     }
 }
